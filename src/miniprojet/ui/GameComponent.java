@@ -4,38 +4,53 @@ import miniprojet.model.Grid;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import javax.swing.*;
 
 /**
  * @author Axel LE BOT
  */
-public class GridComponent extends JComponent implements KeyListener {
+public class GameComponent extends JComponent implements KeyListener {
     private Grid grid;
-    private JFrame owner;
-    // Properties
-    private int caseSizePixel;
-    private int outlineWidth;
-    private int fontSize;
+
+    // UI Properties
+    private final int caseSizePixel = 100;
+    private final int outlineWidth = 15;
+    private final int fontSize = 40;
 
     // Defaults
     private static int DEFAULT_GRID_SIZE = 4;
 
-    public GridComponent(JFrame ownerFrame) {
+    // Game Status
+    private long gameStatStartTime;
+    private int gameStatMoveCounter;
+
+    // Game Listener
+    private ArrayList<GameListener> gameListenerList;
+
+    public GameComponent() {
         super();
-        this.owner = ownerFrame;
-        caseSizePixel = 100;
-        outlineWidth = 15;
-        fontSize = 40;
-        generateGrid(DEFAULT_GRID_SIZE);
+        this.gameListenerList = new ArrayList<>();
+        initGridComponent();
+    }
+
+    private void initGridComponent() {
+        generateGrid();
         setFocusable(true);
         addKeyListener(this);
     }
 
-    private void generateGrid(int size) {
-        this.grid = new Grid(size);
+    public void generateGrid() {
+        this.grid = new Grid(DEFAULT_GRID_SIZE);
         this.grid.addRandom();
         this.grid.addRandom();
         this.repaint();
+        resetGameStats();
+    }
+
+    private void resetGameStats() {
+        this.gameStatMoveCounter = 0;
+        this.gameStatStartTime = System.currentTimeMillis();
     }
 
     private Color getColorOfNumber(int number) {
@@ -134,9 +149,8 @@ public class GridComponent extends JComponent implements KeyListener {
     @Override
     public void keyReleased(KeyEvent ke) {
         if (ke.getKeyChar() == '0' || ke.getKeyCode() == KeyEvent.VK_F5 || ke.getKeyCode() == KeyEvent.VK_R) {
-            generateGrid(DEFAULT_GRID_SIZE);
+            generateGrid();
         }
-
         if (ke.getKeyCode() == KeyEvent.VK_UP || ke.getKeyCode() == KeyEvent.VK_DOWN || ke.getKeyCode() == KeyEvent.VK_LEFT || ke.getKeyCode() == KeyEvent.VK_RIGHT) {
             Grid g_tmp = new Grid(this.grid);
 
@@ -157,35 +171,92 @@ public class GridComponent extends JComponent implements KeyListener {
 
             //Grid changed ?
             if (!Grid.equalsGrille(grid, g_tmp)) {
+                gameStatMoveCounter++;
                 this.grid.addRandom();
+                repaint();
             }
 
-            repaint();
-
-            checkGameStatus(ke);
+            checkGameStatus();
         }
     }
 
-    private void checkGameStatus(KeyEvent ke) {
-        EndDialog boite = null;
-        if (this.grid.grillePerdu()) {        // Game lost ?
-            boite = new EndDialog(this.owner, false);
-            boite.setLocationRelativeTo(this);//position de la boite de dialogue par rapport à this
-        } else if (this.grid.grilleGagne()) { // Game won ?
-            boite = new EndDialog(this.owner, true);
-            boite.setLocationRelativeTo(this);//position de la boite de dialogue par rapport à this
-        }
-        if (boite != null) {
-            int result = boite.showDialog();
-            switch (result) {
-                default:
-                case EndDialog.REPLAY:
-                    generateGrid(DEFAULT_GRID_SIZE);
-                    break;
-                case EndDialog.QUIT:
-                    this.owner.dispose();
-                    break;
+    private void checkGameStatus() {
+        if (this.grid.grillePerdu() || this.grid.grilleGagne()) {
+            boolean win = grid.grilleGagne();
+            GameStats gameStats = new GameStats();
+            gameStats.setTimeCounter(System.currentTimeMillis() - gameStatStartTime);
+            gameStats.setMoveCounter(gameStatMoveCounter);
+            gameStats.setMaxValue(this.grid.getValueMax());
+            gameStats.setWin(win);
+            for (GameListener gameListener : gameListenerList) {
+                gameListener.gameEnded(gameStats);
             }
         }
     }
+
+    public void addGameListener(GameListener gameListener) {
+        this.gameListenerList.add(gameListener);
+    }
+
+    public boolean removeGameListener(GameListener gameListener) {
+        return this.gameListenerList.remove(gameListener);
+    }
+
+    public interface GameListener {
+        void gameEnded(GameStats gameStats);
+    }
+
+    public class GameStats {
+        private boolean win;
+        private int moveCounter;
+        private long timeCounter;
+        private int maxValue;
+
+        public GameStats() {
+            this.win = false;
+            this.moveCounter = 0;
+            this.timeCounter = 0;
+            this.maxValue = 0;
+        }
+
+        public GameStats(boolean win, int moveCounter, int timeCounter, int maxValue) {
+            this.win = win;
+            this.moveCounter = moveCounter;
+            this.timeCounter = timeCounter;
+            this.maxValue = maxValue;
+        }
+
+        public boolean isWin() {
+            return win;
+        }
+
+        public void setWin(boolean win) {
+            this.win = win;
+        }
+
+        public int getMoveCounter() {
+            return moveCounter;
+        }
+
+        public void setMoveCounter(int moveCounter) {
+            this.moveCounter = moveCounter;
+        }
+
+        public long getTimeCounter() {
+            return timeCounter;
+        }
+
+        public void setTimeCounter(long timeCounter) {
+            this.timeCounter = timeCounter;
+        }
+
+        public int getMaxValue() {
+            return maxValue;
+        }
+
+        public void setMaxValue(int maxValue) {
+            this.maxValue = maxValue;
+        }
+    }
+
 }

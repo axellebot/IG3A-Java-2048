@@ -1,6 +1,8 @@
 package miniprojet.ui;
 
 import miniprojet.Resources;
+import miniprojet.model.Data;
+import miniprojet.model.Record;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -9,7 +11,7 @@ import javax.swing.*;
 /**
  * @author Axel LE BOT
  */
-public class EndDialog extends JDialog implements ActionListener {
+public class EndGameDialog extends JDialog implements ActionListener {
     // UI
     private JButton btnSaveAndReplay;
     private JButton btnReplay;
@@ -19,24 +21,31 @@ public class EndDialog extends JDialog implements ActionListener {
 
     // Behavior
     private boolean save = false;
-
     private int returnStatement;
     public static final int REPLAY = 1;
     public static final int QUIT = 2;
 
+    private Data data;
+    private Record record;
+
     /**
      * @param ownerFrame the {@code Frame} the window where the dialog will be displayed
-     * @param win        boolean true if player won false otherwise
+     * @param data       the {@code Data} of the application
+     * @param record     the {@code Record} of the game
      */
-    EndDialog(JFrame ownerFrame, boolean win) {
+    EndGameDialog(JFrame ownerFrame, Data data, Record record) {
         super(ownerFrame, Resources.END_DIALOG_TITLE_END_GAME, true);
-        setResizable(false);
-        setDefaultCloseOperation(HIDE_ON_CLOSE);
-        initPanel(win);
+        this.data = data;
+        this.record = record;
+
+        initDialog();
     }
 
-    private void initPanel(boolean win) {
-        String msg = (win) ? Resources.LABEL_END_GAME_SUCCEED : Resources.LABEL_END_GAME_FAILED;
+    private void initDialog() {
+        setResizable(false);
+        setDefaultCloseOperation(HIDE_ON_CLOSE);
+
+        String msg = (this.record.getMaxValue() == Resources.GAME_GOAL) ? Resources.LABEL_END_GAME_SUCCEED : Resources.LABEL_END_GAME_FAILED;
         btnSaveAndReplay = new JButton(Resources.END_DIALOG_BUTTON_SAVE_REPLAY);
         btnSaveAndReplay.setBackground(Color.GREEN);
         btnSaveAndReplay.addActionListener(this);
@@ -51,7 +60,6 @@ public class EndDialog extends JDialog implements ActionListener {
         btnSaveAndQuit = new JButton(Resources.END_DIALOG_BUTTON_SAVE_QUIT);
         btnSaveAndQuit.setBackground(Color.red);
         btnSaveAndQuit.addActionListener(this);
-
 
         JLabel lblMessage = new JLabel(msg);
         lblMessage.setFont(new Font("Serif", Font.PLAIN, 36));
@@ -109,14 +117,21 @@ public class EndDialog extends JDialog implements ActionListener {
 
         if (source == btnSaveAndReplay || source == btnReplay || source == btnQuit || source == btnSaveAndQuit) {
             if (source == btnSaveAndReplay) {
-                this.returnStatement = REPLAY;
+                save = true;
+                returnStatement = REPLAY;
             } else if (source == btnReplay) {
-                this.returnStatement = REPLAY;
+                save = false;
+                returnStatement = REPLAY;
             } else if (source == btnQuit) {
-                this.returnStatement = QUIT;
+                save = false;
+                returnStatement = QUIT;
             } else if (source == btnSaveAndQuit) {
-                this.returnStatement = QUIT;
+                save = true;
+                returnStatement = QUIT;
             }
+            record.setNickname(fieldNickname.getText());
+            data.addRecord(record);
+            data.notifyObservers();
             this.setVisible(false);
         }
     }

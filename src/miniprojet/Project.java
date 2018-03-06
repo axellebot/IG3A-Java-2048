@@ -20,7 +20,6 @@ class Project {
         }
 
         MainView application = new MainView();
-        application.setLocationRelativeTo(null);
-        application.setVisible(true);
+        application.run();
     }
 }

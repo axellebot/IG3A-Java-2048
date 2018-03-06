@@ -256,13 +256,21 @@ public class Grid {
     }
 
     public boolean grilleGagne() {
+        return (getValueMax() == 2048);
+    }
+
+    public int getValueMax() {
+        int max = 0;
+        int currentValue = 0;
         for (int i = 0; i < this.size; i++) {
             for (int j = 0; j < this.size; j++) {
-                if (this.grille[i][j].getValue() == 2048) {
-                    return true;
+                currentValue = this.grille[i][j].getValue();
+                max = Math.max(currentValue, max);
+                if (max == 2048) {
+                    return currentValue;
                 }
             }
         }
-        return false;
+        return max;
     }
 }

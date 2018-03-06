@@ -10,6 +10,7 @@ public class Resources {
     // Misc
     public static final String LABEL_END_GAME_FAILED = "Game over";
     public static final String LABEL_END_GAME_SUCCEED = "Good game";
+    public static final int GAME_GOAL = 2048;
 
     // Main Frame
     public static final String MAIN_FRAME_MENU_LABEL = "Menu";
@@ -29,4 +30,5 @@ public class Resources {
 
     // Leaderboard Panel
     public static final String LEADERBOARD_PANEL_TITLE = "Leaderboard";
+
 }

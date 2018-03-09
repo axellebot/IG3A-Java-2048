@@ -45,7 +45,7 @@ public class GameView extends JInternalFrame implements GameListener {
                 this.gameComponent.generateGrid();
                 break;
             case EndGameDialog.QUIT:
-                this.dispose();
+                ownerFrame.dispose();
                 break;
         }
     }

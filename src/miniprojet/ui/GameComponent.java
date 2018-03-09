@@ -1,7 +1,5 @@
 package miniprojet.ui;
 
-import miniprojet.model.Grid;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
@@ -14,9 +12,9 @@ public class GameComponent extends JComponent implements KeyListener {
     private Grid grid;
 
     // UI Properties
-    private final int caseSizePixel = 100;
-    private final int outlineWidth = 15;
-    private final int fontSize = 40;
+    private final int caseSizePixel;
+    private final int outlineWidth;
+    private final int fontSize;
 
     // Defaults
     private static int DEFAULT_GRID_SIZE = 4;
@@ -30,6 +28,18 @@ public class GameComponent extends JComponent implements KeyListener {
 
     public GameComponent() {
         super();
+        this.caseSizePixel = 100;
+        this.outlineWidth = 15;
+        this.fontSize = 40;
+        this.gameListenerList = new ArrayList<>();
+        initGridComponent();
+    }
+
+    public GameComponent(int caseSizePixel, int outlineWidth, int fontSize) {
+        super();
+        this.caseSizePixel = caseSizePixel;
+        this.outlineWidth = outlineWidth;
+        this.fontSize = fontSize;
         this.gameListenerList = new ArrayList<>();
         initGridComponent();
     }
@@ -170,7 +180,7 @@ public class GameComponent extends JComponent implements KeyListener {
             }
 
             //Grid changed ?
-            if (!Grid.equalsGrille(grid, g_tmp)) {
+            if (!grid.equals(g_tmp)) {
                 gameStatMoveCounter++;
                 this.grid.addRandom();
                 repaint();
@@ -181,8 +191,8 @@ public class GameComponent extends JComponent implements KeyListener {
     }
 
     private void checkGameStatus() {
-        if (this.grid.grillePerdu() || this.grid.grilleGagne()) {
-            boolean win = grid.grilleGagne();
+        if (this.grid.gridLost() || this.grid.gridWon()) {
+            boolean win = grid.gridWon();
             GameStats gameStats = new GameStats();
             gameStats.setTimeCounter(System.currentTimeMillis() - gameStatStartTime);
             gameStats.setMoveCounter(gameStatMoveCounter);
@@ -259,4 +269,304 @@ public class GameComponent extends JComponent implements KeyListener {
         }
     }
 
+    /**
+     * Grid
+     */
+    public class Grid {
+        private final int FINAL_VALUE = 2048;
+        private int size;
+        private Tile grille[][];
+
+        public Grid(int size) {
+            this.size = size;
+            this.grille = new Tile[this.size][this.size];
+
+            for (int i = 0; i < this.size; i++) {
+                for (int j = 0; j < this.size; j++) {
+                    grille[i][j] = new Tile(0);
+                }
+            }
+        }
+
+        public Grid(Grid g) {
+            this.size = g.size;
+            this.grille = new Tile[this.size][this.size];
+            for (int i = 0; i < this.size; i++) {
+                for (int j = 0; j < this.size; j++) {
+                    this.grille[i][j] = new Tile(g.getGrille()[i][j]);
+                }
+            }
+        }
+
+        public int getSize() {
+            return size;
+        }
+
+        public Tile[][] getGrille() {
+            return grille;
+        }
+
+        @Override
+        public String toString() {
+            String _tmp = "";
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    _tmp += grille[i][j].toString() + "\t";
+                }
+                _tmp += "\n";
+            }
+            return _tmp;
+        }
+
+        public void addRandom() {
+            ArrayList<Tile> emptyTile = new ArrayList<>();
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    if (grille[i][j].getValue() == 0) {
+                        emptyTile.add(grille[i][j]);
+                    }
+                }
+            }
+            if (emptyTile.size() > 0) {
+                int index = (int) (Math.random() * (emptyTile.size() - 1));
+
+                double rand = Math.random();
+                if (rand <= 0.5) {
+                    emptyTile.get(index).setValue(2);
+
+                } else {
+                    if (rand > 0.5) {
+                        emptyTile.get(index).setValue(4);
+
+                    }
+                }
+            }
+        }
+
+        public int[] fetchColumn(int j) {
+            int tab[] = new int[size];
+
+            //initaliser les cases de tab à 0
+            for (int i = 0; i < size; i++) {
+                tab[i] = 0;
+            }
+
+            int k = 0;
+
+            for (int i = 0; i < size; i++) {
+                if (grille[i][j].getValue() > 0) {
+                    tab[k] = grille[i][j].getValue();
+                    k++;
+                }
+            }
+            return tab;
+        }
+
+        public int[] fetchLine(int i) {
+            int tab[] = new int[size];
+
+            //initaliser les cases de tab à 0
+            for (int j = 0; j < size; j++) {
+                tab[j] = 0;
+            }
+
+            int k = 0;
+
+            for (int j = 0; j < size; j++) {
+                if (grille[i][j].getValue() > 0) {
+                    tab[k] = grille[i][j].getValue();
+                    k++;
+                }
+            }
+            return tab;
+        }
+
+        public void pushUp() {
+            for (int j = 0; j < size; j++) { // pour chaque colonne
+                int tab[] = fetchColumn(j); //recupérer la colonne condensé
+                int i = 0, k = 0;
+
+                while (k < size) {  //chaque ligne de la colonne
+                    if (k + 1 < size && tab[k] == tab[k + 1]) {
+                        this.grille[i][j].setValue(tab[k] + tab[k + 1]);
+                        k += 2;
+                    } else {
+                        this.grille[i][j].setValue(tab[k]);
+                        k++;
+                    }
+                    i++;
+                }
+                for (; i < size; i++) {
+                    this.grille[i][j].setValue(0);
+                }
+            }
+        }
+
+        public void pushDown() {
+            for (int j = 0; j < size; j++) { // pour chaque colonne
+                int tab[] = fetchColumn(j); //recupérer la colonne condensé
+                int i = this.size - 1, k = this.size - 1;
+
+                while (k >= 0) {  //chaque ligne de la colonne
+                    if (tab[k] != 0) {
+                        if (k - 1 >= 0 && tab[k] == tab[k - 1]) {
+                            this.grille[i][j].setValue(tab[k] + tab[k - 1]);
+                            k -= 2;
+                        } else {
+                            this.grille[i][j].setValue(tab[k]);
+                            k--;
+                        }
+                        i--;
+                    } else {
+                        k--;
+                    }
+                }
+                for (; i >= 0; i--) {
+                    this.grille[i][j].setValue(0);
+                }
+            }
+        }
+
+        public void pushLeft() {
+            for (int i = 0; i < size; i++) { // pour chaque ligne
+                int tab[] = fetchLine(i); //recupérer la ligne condensé
+                int j = 0, k = 0;
+
+                while (k < size) {  //chaque colonne de la ligne
+                    if (k + 1 < size && tab[k] == tab[k + 1]) {
+                        this.grille[i][j].setValue(tab[k] + tab[k + 1]);
+                        k += 2;
+                    } else {
+                        this.grille[i][j].setValue(tab[k]);
+                        k++;
+                    }
+                    j++;
+                }
+                for (; j < size; j++) {
+                    this.grille[i][j].setValue(0);
+                }
+            }
+        }
+
+        public void pushRight() {
+            for (int i = 0; i < size; i++) { // pour chaque ligne
+                int tab[] = fetchLine(i); //recupérer la ligne condensé
+                int j = this.size - 1, k = this.size - 1;
+
+                while (k >= 0) {  //chaque ligne de la colonne
+                    if (tab[k] != 0) {
+                        if (k - 1 >= 0 && tab[k] == tab[k - 1]) {
+                            this.grille[i][j].setValue(tab[k] + tab[k - 1]);
+                            k -= 2;
+                        } else {
+                            this.grille[i][j].setValue(tab[k]);
+                            k--;
+                        }
+                        j--;
+                    } else {
+                        k--;
+                    }
+                }
+                for (; j >= 0; j--) {
+                    this.grille[i][j].setValue(0);
+                }
+            }
+
+        }
+
+        /**
+         * Compare 2 grid
+         *
+         * @param grid the {Grid} to compare
+         * @return true if same grid false otherwise
+         */
+        public boolean equalsGrille(Grid grid) {
+            if (!(this.getSize() == grid.getSize())) { // not same size ?
+                return false;
+            } else {
+                for (int i = 0; i < this.getSize(); i++) {
+                    for (int j = 0; j < this.getSize(); j++) {
+                        if (this.getGrille()[i][j].getValue() != grid.getGrille()[i][j].getValue()) { // same value ?
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+        }
+
+        public boolean gridLost() {
+            int k = 0;
+
+            Grid g_tmp = new Grid(this);
+
+            boolean grilleRempli = false;
+            for (int i = 0; i < this.size; i++) {
+                for (int j = 0; j < this.size; j++) {
+                    if (this.grille[i][j].getValue() != 0) {
+                        k++;
+                    }
+                }
+            }
+            if (k == this.getSize() * this.getSize()) {
+                grilleRempli = true;
+            }
+            if (grilleRempli) {
+                g_tmp.pushDown();
+                g_tmp.pushUp();
+                g_tmp.pushLeft();
+                g_tmp.pushRight();
+                return this.equalsGrille(g_tmp);
+            }
+            return false;
+        }
+
+        public boolean gridWon() {
+            return (getValueMax() == FINAL_VALUE);
+        }
+
+        public int getValueMax() {
+            int max = 0;
+            int currentValue = 0;
+            for (int i = 0; i < this.size; i++) {
+                for (int j = 0; j < this.size; j++) {
+                    currentValue = this.grille[i][j].getValue();
+                    max = Math.max(currentValue, max);
+                    if (max == FINAL_VALUE) {
+                        return currentValue;
+                    }
+                }
+            }
+            return max;
+        }
+    }
+
+    /**
+     * Tile
+     */
+    public class Tile {
+        private int value;
+        private int x, y;
+
+        public Tile(int value) {
+            this.value = value;
+        }
+
+        public Tile(Tile c) {
+            this.value = c.getValue();
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public void setValue(int value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return Integer.toString(value);
+        }
+    }
 }

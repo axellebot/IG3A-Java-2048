@@ -32,6 +32,10 @@ public class Data implements Observable {
         return recordList.remove(record);
     }
 
+    public void removeAllRecords(){
+         recordList.clear();
+    }
+
     static public Data getInstance() {
         Data data = new Data();
         return data;

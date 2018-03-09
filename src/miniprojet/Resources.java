@@ -30,5 +30,6 @@ public class Resources {
 
     // Leaderboard Panel
     public static final String LEADERBOARD_PANEL_TITLE = "Leaderboard";
-
+    public static final String LEADERBOARD_BUTTON_DELETE_ALL = "Delete All";
+    public static final String LEADERBOARD_BUTTON_DELETE = "Delete";
 }

@@ -180,7 +180,7 @@ public class GameComponent extends JComponent implements KeyListener {
             }
 
             //Grid changed ?
-            if (!grid.equals(g_tmp)) {
+            if (!grid.equalsGrid(g_tmp)) {
                 gameStatMoveCounter++;
                 this.grid.addRandom();
                 repaint();
@@ -480,7 +480,7 @@ public class GameComponent extends JComponent implements KeyListener {
          * @param grid the {Grid} to compare
          * @return true if same grid false otherwise
          */
-        public boolean equalsGrille(Grid grid) {
+        public boolean equalsGrid(Grid grid) {
             if (!(this.getSize() == grid.getSize())) { // not same size ?
                 return false;
             } else {
@@ -516,7 +516,7 @@ public class GameComponent extends JComponent implements KeyListener {
                 g_tmp.pushUp();
                 g_tmp.pushLeft();
                 g_tmp.pushRight();
-                return this.equalsGrille(g_tmp);
+                return this.equalsGrid(g_tmp);
             }
             return false;
         }

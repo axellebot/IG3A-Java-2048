@@ -10,8 +10,7 @@ public class Resources {
     // Misc
     public static final String LABEL_END_GAME_FAILED = "Game over";
     public static final String LABEL_END_GAME_SUCCEED = "Good game";
-    public static final String BUTTON_RESTART = "Restart";
-    public static final String BUTTON_QUIT = "Quit";
+    public static final int GAME_GOAL = 2048;
 
     // Main Frame
     public static final String MAIN_FRAME_MENU_LABEL = "Menu";
@@ -22,6 +21,15 @@ public class Resources {
     // Game Panel
     public static final String GAME_PANEL_TITLE = "Game";
 
+    // End Dialog
+    public static final String FIELD_NICKNAME_LABEL = "Enter your nickname : ";
+    public static final String END_DIALOG_BUTTON_SAVE_REPLAY = "Save & Replay";
+    public static final String END_DIALOG_BUTTON_REPLAY = "Replay";
+    public static final String END_DIALOG_BUTTON_SAVE_QUIT = "Save & Quit";
+    public static final String END_DIALOG_BUTTON_QUIT = "Quit";
+
     // Leaderboard Panel
     public static final String LEADERBOARD_PANEL_TITLE = "Leaderboard";
+    public static final String LEADERBOARD_BUTTON_DELETE_ALL = "Delete All";
+    public static final String LEADERBOARD_BUTTON_DELETE = "Delete";
 }

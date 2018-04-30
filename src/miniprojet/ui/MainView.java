@@ -1,6 +1,7 @@
 package miniprojet.ui;
 
 import miniprojet.Resources;
+import miniprojet.model.Data;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,9 +9,10 @@ import java.awt.*;
 /**
  * @author Axel LE BOT
  */
-public class MainView extends JFrame {
-    private JInternalFrame leaderboardView;
-    private JInternalFrame gameView;
+public class MainView extends JFrame implements Runnable {
+    private Data data;
+    private LeaderboardView leaderboardView;
+    private GameView gameView;
 
     public MainView() {
         setTitle(Resources.APP_FRAME_TITLE);
@@ -18,7 +20,9 @@ public class MainView extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setIconImage(new ImageIcon(this.getClass().getResource("./mainicon.png")).getImage());
 
-        initViews();
+        this.data = Data.getInstance();
+
+        initMainView();
         initMenuBar();
     }
 
@@ -34,7 +38,6 @@ public class MainView extends JFrame {
         menuItem.addActionListener(e -> dispose());
         mainMenu.add(menuItem);
 
-
         //Build Display
         JMenu displayMenu = new JMenu(Resources.MAIN_FRAME_MENU_DISPLAY_LABEL);
         menuBar.add(displayMenu);
@@ -48,11 +51,12 @@ public class MainView extends JFrame {
         setJMenuBar(menuBar);
     }
 
-    private void initViews() {
+    private void initMainView() {
         setLayout(new GridLayout());  // the default GridLayout is like a grid with 1 column and 1 row,
 
-        leaderboardView = new LeaderboardView();  // Create Leaderboard Panel
-        gameView = new GameView(this); // Create Grid Panel
+        leaderboardView = new LeaderboardView(data);  // Create Leaderboard Panel
+        data.addObserver(leaderboardView);
+        gameView = new GameView(this, data); // Create Grid Panel
 
         add(leaderboardView, LEFT_ALIGNMENT); // Add Leaderboard Panel
         add(gameView, RIGHT_ALIGNMENT); // Add Game Panel
@@ -61,5 +65,11 @@ public class MainView extends JFrame {
         gameView.setVisible(true);
 
         pack();
+    }
+
+    @Override
+    public void run() {
+        this.setLocationRelativeTo(null);
+        this.setVisible(true);
     }
 }

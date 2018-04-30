@@ -26,7 +26,7 @@ public class GameView extends JInternalFrame implements GameListener {
         setBackground(Color.white); // Set background color
         setTitle(Resources.GAME_PANEL_TITLE);
 
-        gameComponent = new GameComponent(100,15,40);
+        gameComponent = new GameComponent(100, 15, 40);
         gameComponent.addGameListener(this);
         add(gameComponent); // Add gridView to the panel with constraints layout
     }

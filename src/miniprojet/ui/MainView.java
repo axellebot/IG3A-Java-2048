@@ -44,7 +44,9 @@ public class MainView extends JFrame implements Runnable {
 
         JMenuItem toggleLeaderboard = new JCheckBoxMenuItem(Resources.MAIN_FRAME_MENU_ITEM_TOGGLE_LEADERBOARD);
         toggleLeaderboard.setSelected(leaderboardView.isVisible());
-        toggleLeaderboard.addItemListener(e -> leaderboardView.setVisible(!leaderboardView.isVisible()));
+        toggleLeaderboard.addItemListener(e -> {
+            leaderboardView.setVisible(!leaderboardView.isVisible());
+        });
 
         displayMenu.add(toggleLeaderboard);
 
@@ -71,5 +73,10 @@ public class MainView extends JFrame implements Runnable {
     public void run() {
         this.setLocationRelativeTo(null);
         this.setVisible(true);
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        return super.getPreferredSize();
     }
 }

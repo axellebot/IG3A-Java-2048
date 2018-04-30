@@ -19,6 +19,7 @@ public class LeaderboardView extends JInternalFrame implements Observer, ActionL
     // UI
     private JTable table;
     private ModeleRecord recordListModel;
+    private JPanel btnPanel;
     private JButton btnDeleteAll;
     private JButton btnDelete;
 
@@ -30,6 +31,7 @@ public class LeaderboardView extends JInternalFrame implements Observer, ActionL
     private void initLeaderboardView() {
         setBackground(Color.white); // Set background color
         setTitle(Resources.LEADERBOARD_PANEL_TITLE);
+        setResizable(true);
 
         recordListModel = new ModeleRecord();
         table = new JTable(recordListModel);
@@ -43,19 +45,23 @@ public class LeaderboardView extends JInternalFrame implements Observer, ActionL
         btnDeleteAll.addActionListener(this);
 
 
-        JPanel panel = new JPanel();
-        FlowLayout experimentLayout = new FlowLayout();
-        panel.add(btnDelete);
-        panel.add(btnDeleteAll);
+        btnPanel = new JPanel();
+        btnPanel.add(btnDelete);
+        btnPanel.add(btnDeleteAll);
 
         add(scrollPane, BorderLayout.CENTER);
-        add(panel, BorderLayout.SOUTH);
+        add(btnPanel, BorderLayout.SOUTH);
     }
-
-    @Override
-    public Dimension getPreferredSize() {
-        return table.getPreferredSize();
-    }
+//
+//    @Override
+//    public Dimension getPreferredSize() {
+//        Dimension tmp = new Dimension();
+//        Dimension tableDimension = table.getPreferredSize();
+//        Dimension btnsDimension = btnPanel.getPreferredSize();
+//        tmp.height = tableDimension.height + btnsDimension.height;
+//        tmp.width = tableDimension.width + btnsDimension.width;
+//        return tmp;
+//    }
 
     @Override
     public void update() {
